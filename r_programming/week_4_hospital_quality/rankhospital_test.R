@@ -36,7 +36,7 @@ test_rankhospitalByInvalidState <- function() {
               sep=""))
 }
 
-test_bestInvalidOutcome <- function() {
+test_rankhospitalInvalidOutcome <- function() {
     obs <- tryCatch(mrankhospital("NY", "hert attack"), error=simpleError)
     checkEquals(
         obs$message,
