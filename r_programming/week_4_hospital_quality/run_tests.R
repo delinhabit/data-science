@@ -3,9 +3,9 @@ library('RUnit')
 source('best.R')
 
 test.suite <- defineTestSuite(
-    "best",
+    "Week 4 assignments",
     dirs = file.path(getwd()),
-    testFileRegexp = '^best_test\\.R')
+    testFileRegexp = '^\\w+_test\\.R')
 
 test.result <- runTestSuite(test.suite)
 
