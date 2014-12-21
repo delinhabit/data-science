@@ -11,10 +11,10 @@ best <- function(state, outcome, outcome.data = NULL) {
     if (!state %in% outcome.data$State) stop("invalid state")
     if (!outcome %in% names(valid.outcomes)) stop("invalid outcome")
 
-    state.data <- outcome.data[outcome.data$State == state, ]
     outcome.column <- valid.outcomes[[outcome]]
-    outcome.data[, outcome.column] <- as.numeric(outcome.data[, outcome.column])
+    state.data <- outcome.data[outcome.data$State == state, ]
 
+    state.data[[outcome.column]] <- as.numeric(state.data[[outcome.column]])
     ordering <- order(
         state.data[, outcome.column],
         state.data$Hospital.Name,

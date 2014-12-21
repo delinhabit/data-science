@@ -10,8 +10,8 @@ test_best <- function() {
     }
 
     checkEquals(mbest("TX", "heart attack"), "CYPRESS FAIRBANKS MEDICAL CENTER")
-    checkEquals(mbest("MD", "pneumonia"), "GREATER BALTIMORE MEDICAL CENTER")
     checkEquals(mbest("TX", "heart failure"), "FORT DUNCAN MEDICAL CENTER")
+    checkEquals(mbest("MD", "pneumonia"), "GREATER BALTIMORE MEDICAL CENTER")
 }
 
 test_bestWithoutProvidingData <- function() {
