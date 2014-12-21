@@ -13,6 +13,7 @@ best <- function(state, outcome, outcome.data = NULL) {
 
     state.data <- outcome.data[outcome.data$State == state, ]
     outcome.column <- valid.outcomes[[outcome]]
+    outcome.data[, outcome.column] <- as.numeric(outcome.data[, outcome.column])
 
     ordering <- order(
         state.data[, outcome.column],
@@ -20,5 +21,4 @@ best <- function(state, outcome, outcome.data = NULL) {
         na.last = NA)
     sorted.data <- state.data[ordering, ]
     sorted.data$Hospital.Name[[1]]
-    sorted.data
 }
