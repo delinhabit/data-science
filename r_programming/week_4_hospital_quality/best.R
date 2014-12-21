@@ -14,7 +14,8 @@ best <- function(state, outcome, outcome.data = NULL) {
     outcome.column <- valid.outcomes[[outcome]]
     state.data <- outcome.data[outcome.data$State == state, ]
 
-    state.data[[outcome.column]] <- as.numeric(state.data[[outcome.column]])
+    state.data[[outcome.column]] <- suppressWarnings(
+        as.numeric(state.data[[outcome.column]]))
     ordering <- order(
         state.data[, outcome.column],
         state.data$Hospital.Name,

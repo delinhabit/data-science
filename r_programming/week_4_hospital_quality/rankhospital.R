@@ -14,7 +14,8 @@ rankhospital <- function(state, outcome, num = "best", outcome.data = NULL) {
     outcome.column <- valid.outcomes[[outcome]]
     state.data <- outcome.data[outcome.data$State == state, ]
 
-    state.data[[outcome.column]] <- as.numeric(state.data[[outcome.column]])
+    state.data[[outcome.column]] <- suppressWarnings(
+        as.numeric(state.data[[outcome.column]]))
     ordering <- order(
         state.data[, outcome.column],
         state.data$Hospital.Name,
@@ -28,7 +29,7 @@ rankhospital <- function(state, outcome, num = "best", outcome.data = NULL) {
     } else if (num > nrow(sorted.data)) {
         NA
     } else {
-        as.numeric(num)
+        suppressWarnings(as.numeric(num))
     }
     if (is.na(rank)) return(NA)
 
