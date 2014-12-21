@@ -52,10 +52,9 @@ test_rankallWithBest = function () {
 }
 
 test_rankallInvalidOutcome <- function() {
-    obs <- tryCatch(mrankall("hert attack"), error=simpleError)
-    checkEquals(
-        obs$message,
-        paste("Error in rankall(outcome, num,",
-              " outcome.data = outcome.data): invalid outcome\n",
-              sep=""))
+    tryCatch(
+        mrankall("hert attack"),
+        error = function(e) {
+            checkEquals(e$message, "invalid outcome")
+        })
 }

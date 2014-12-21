@@ -28,21 +28,19 @@ test_rankhospitalInvalid <- function() {
 }
 
 test_rankhospitalByInvalidState <- function() {
-    obs <- tryCatch(mrankhospital("BB", "heart attack"), error=simpleError)
-    checkEquals(
-        obs$message,
-        paste("Error in rankhospital(state, outcome, num,",
-              " outcome.data = outcome.data): invalid state\n",
-              sep=""))
+    tryCatch(
+        mrankhospital("BB", "heart attack"),
+        error = function(e) {
+            checkEquals(e$message, "invalid state")
+        })
 }
 
 test_rankhospitalInvalidOutcome <- function() {
-    obs <- tryCatch(mrankhospital("NY", "hert attack"), error=simpleError)
-    checkEquals(
-        obs$message,
-        paste("Error in rankhospital(state, outcome, num,",
-              " outcome.data = outcome.data): invalid outcome\n",
-              sep=""))
+    tryCatch(
+        mrankhospital("NY", "hert attack"),
+        error = function(e) {
+            checkEquals(e$message, "invalid outcome")
+        })
 }
 
 test_rankhospitalWithoutProvidingData <- function() {
