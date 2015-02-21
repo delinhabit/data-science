@@ -8,8 +8,9 @@ if (!file.exists("data")) {
 }
 
 nei_file = "data/summarySCC_PM25.rds"
+scc_file = "data/Source_Classification_Code.rds"
 
-if (!file.exists(nei_file)) {
+if (!all(file.exists(nei_file, scc_file))) {
     url = "https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2FNEI_data.zip"
     data_file = "data/NEI_data.zip"
     download.file(url, destfile = data_file, method = "curl")
@@ -19,24 +20,25 @@ if (!file.exists(nei_file)) {
 ### Load the data
 
 nei_data <- tbl_df(readRDS(nei_file))
+scc_data <- tbl_df(readRDS(scc_file))
 
 ### Analyze and plot
 
-baltimore_emissions_by_year_and_source_type <- nei_data %>%
-    filter(fips == "24510") %>%
-    group_by(year, type) %>%
+coal_scc = scc_data$SCC[grepl("Coal", scc_data$EI.Sector)]
+coal_emissions_by_year <- nei_data %>%
+    filter(SCC %in% coal_scc) %>%
+    group_by(year) %>%
     summarise(total = sum(Emissions)) %>%
     mutate(total = log(total))
 
-png("plot3.png")
+png("plot4.png")
 
-ggplot(baltimore_emissions_by_year_and_source_type, aes(year, total)) +
+ggplot(coal_emissions_by_year, aes(year, total)) +
     geom_point() +
     geom_smooth(method = "lm") +
-    facet_wrap(~type) +
     scale_size_area() +
     labs(x = "Year", y = expression("log " * PM[2.5])) +
-    ggtitle(expression("Evolution of " * PM[2.5] * " emissions by source type (Baltimore, MA)"))
+    ggtitle("Evolution of coal combustion-related emissions (USA)")
 
 # Use invisible() to silence errors when running with Rscript
 invisible(dev.off())

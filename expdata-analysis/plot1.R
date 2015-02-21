@@ -17,7 +17,7 @@ if (!file.exists(nei_file)) {
 
 ### Load the data
 
-nei_data <- tbl_dfreadRDS(nei_file)
+nei_data <- tbl_df(readRDS(nei_file))
 
 ### Analyze and plot
 
@@ -32,7 +32,8 @@ plot(
     emissions_by_year,
     pch = 19,
     xlab = "Year",
-    ylab = "Emissions (millions of tons)")
+    ylab = "Emissions (millions of tons)",
+    main = expression("Evolution of " * PM[2.5] * " emissions (USA)"))
 
 model <- lm(total ~ year, emissions_by_year)
 abline(model, lwd = 1, col = "darkblue")

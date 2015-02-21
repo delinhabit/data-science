@@ -33,7 +33,8 @@ plot(
     baltimore_emissions_by_year,
     pch = 19,
     xlab = "Year",
-    ylab = "Emissions (thousands of tons)")
+    ylab = "Emissions (thousands of tons)",
+    main = expression("Evolution of " * PM[2.5] * " emissions (Baltimore, MA)"))
 
 model <- lm(total ~ year, baltimore_emissions_by_year)
 abline(model, lwd = 1, col = "darkblue")
