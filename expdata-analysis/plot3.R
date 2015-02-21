@@ -1,4 +1,5 @@
 library(dplyr)
+library(ggplot2)
 
 ### Download the data file if not already downloaded
 
@@ -21,22 +22,20 @@ nei_data <- tbl_df(readRDS(nei_file))
 
 ### Analyze and plot
 
-baltimore_emissions_by_year <- nei_data %>%
+baltimore_emissions_by_year_and_source_type <- nei_data %>%
     filter(fips == "24510") %>%
-    group_by(year) %>%
+    group_by(year, type) %>%
     summarise(total = sum(Emissions)) %>%
-    mutate(total = total / 1e3)
+    mutate(total = log(total))
 
-png("plot2.png")
+png("plot3.png")
 
-plot(
-    baltimore_emissions_by_year,
-    pch = 19,
-    xlab = "Year",
-    ylab = "Emissions (thousands of tons)")
-
-model <- lm(total ~ year, baltimore_emissions_by_year)
-abline(model, lwd = 1, col = "darkblue")
+ggplot(baltimore_emissions_by_year_and_source_type, aes(year, total)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    facet_wrap(~type) +
+    scale_size_area() +
+    labs(x = "Year", y = expression("log " * PM[2.5]))
 
 # Use invisible() to silence errors when running with Rscript
 invisible(dev.off())

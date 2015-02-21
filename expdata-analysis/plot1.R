@@ -17,7 +17,7 @@ if (!file.exists(nei_file)) {
 
 ### Load the data
 
-nei_data <- readRDS(nei_file)
+nei_data <- tbl_dfreadRDS(nei_file)
 
 ### Analyze and plot
 
