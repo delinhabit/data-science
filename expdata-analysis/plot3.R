@@ -28,12 +28,12 @@ baltimore_emissions_by_year_and_source_type <- nei_data %>%
     summarise(total = sum(Emissions)) %>%
     mutate(total = log(total))
 
-png("plot3.png")
+png("plot3.png", width = 960)
 
 ggplot(baltimore_emissions_by_year_and_source_type, aes(year, total)) +
     geom_point() +
     geom_smooth(method = "lm") +
-    facet_wrap(~type) +
+    facet_wrap(~type, nrow = 1) +
     scale_size_area() +
     labs(x = "Year", y = expression("log " * PM[2.5])) +
     ggtitle(expression("Evolution of " * PM[2.5] * " emissions by source type (Baltimore, MA)"))
