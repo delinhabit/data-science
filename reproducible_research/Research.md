@@ -14,6 +14,7 @@ For this analysis we use the following libraries as dependencies and hence they 
 ```r
 library(dplyr)
 library(ggplot2)
+library(reshape2)
 ```
 
 ### Downloading the data
@@ -117,9 +118,9 @@ storm_data[grep("HURRICANE", storm_data$event.type), ]$event.type <- "HURRICANE"
 storm_data[grep("FLASH FLOOD", storm_data$event.type), ]$event.type <- "FLASH FLOOD"
 ```
 
-#### Tidying up the data
+#### Building the clean dataset
 
-In order to interpret the results of our analysis, we need two tidy datasets: number of casualties by event type and the damage amounts by event type.
+In order to interpret the results of our analysis, we need two clean datasets: number of casualties by event type and the damage amounts by event type.
 
 
 ```r
@@ -131,17 +132,105 @@ casualties <- storm_data %>%
         totals = sum(fatalities + injuries)) %>%
     filter(totals > 0) %>%
     arrange(-totals)
+casualties$event.type <- factor(
+    casualties$event.type,
+    levels = rev(casualties$event.type))
+head(casualties, n = 10)
+```
 
+```
+## Source: local data frame [10 x 4]
+## 
+##           event.type fatalities injuries totals
+## 1            TORNADO       5630    91321  96951
+## 2               HEAT       3138     9154  12292
+## 3  THUNDERSTORM WIND        753     9492  10245
+## 4              FLOOD        470     6789   7259
+## 5          LIGHTNING        816     5230   6046
+## 6        FLASH FLOOD       1035     1802   2837
+## 7          ICE STORM         89     1975   2064
+## 8       WINTER STORM        206     1321   1527
+## 9          HURRICANE        135     1326   1461
+## 10         HIGH WIND        246     1137   1383
+```
+
+
+```r
 damage <- storm_data %>%
     group_by(event.type) %>%
     summarise(
-        property = sum(damage.p),
-        crops = sum(damage.c),
-        totals = sum(damage.p + damage.c)) %>%
+        property = sum(damage.p) / 1e9,
+        crops = sum(damage.c) / 1e9,
+        totals = sum(damage.p + damage.c) / 1e9) %>%
     filter(totals > 0) %>%
     arrange(-totals)
+damage$event.type <- factor(
+    damage$event.type,
+    levels = rev(damage$event.type))
+head(damage, n = 10)
+```
+
+```
+## Source: local data frame [10 x 4]
+## 
+##           event.type   property      crops     totals
+## 1              FLOOD 144.657710  5.6619684 150.319678
+## 2          HURRICANE  84.756180  5.5152928  90.271473
+## 3            TORNADO  56.936985  0.3649501  57.301936
+## 4        STORM SURGE  43.323536  0.0000050  43.323541
+## 5               HAIL  15.732262  3.0009545  18.733217
+## 6        FLASH FLOOD  16.906008  1.5316071  18.437615
+## 7            DROUGHT   1.046106 13.9725660  15.018672
+## 8  THUNDERSTORM WIND  11.366567  1.2559504  12.622518
+## 9        RIVER FLOOD   5.118945  5.0294590  10.148404
+## 10         ICE STORM   3.944928  5.0221100   8.967038
 ```
 
 ## Results
+
+In order to interpret the results we will select only the most impactful event types; the ones that account for more than 90% of all the casualties / damage respectively
+
+
+```r
+threshold = 0.9
+```
+
+### Social Consequences
+
+Let's first plot the number of casualties by event type for the most impactiful events.
+
+
+```r
+worst.indexes <- cumsum(casualties$totals) < threshold * sum(casualties$totals)
+worst.casualties <- casualties[worst.indexes, ] %>% 
+    select(-totals) %>% 
+    melt(id.vars = c("event.type"))
+
+ggplot(worst.casualties, aes(x = event.type, y = value, fill = variable)) +
+    geom_bar(stat='identity') + 
+    coord_flip()
+```
+
+![](Research_files/figure-html/unnamed-chunk-13-1.png) 
+
+TBD
+
+### Econimic Consequences
+
+Let's first plot the damage amounts by event type for the most impactiful events.
+
+
+```r
+worst.indexes <- cumsum(damage$totals) < threshold * sum(damage$totals)
+worst.damage <- damage[worst.indexes, ] %>% 
+    select(-totals) %>% 
+    melt(id.vars = c("event.type"))
+
+ggplot(worst.damage, aes(x = event.type, y = value, fill = variable)) +
+    geom_bar(stat='identity') + 
+    coord_flip()
+```
+
+![](Research_files/figure-html/unnamed-chunk-14-1.png) 
 
 TBD
