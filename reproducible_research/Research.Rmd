@@ -10,13 +10,14 @@ output:
 
 ## Synopsis
 
-TDB
+Using the data from the U.S. National Oceanic and Atmospheric Administration’s (NOAA) storm database, we were able to identify the social and economical consequences of severe weather events in U.S. Between 1950-01-03 and 2011-11-30, there were observed 902297 severe weather events that caused over **155 thousands** casualties and **$476 bln** in property and crops damages. The following sections will drill down into the available data and will extract some interesting statistics about these events.
 
 ## Data Processing
 
 For this analysis we use the following libraries as dependencies and hence they have to be loaded into the environment.
 
-```{r, results = 'hide', message = FALSE}
+```{r, results = 'hide', message = FALSE, warning = FALSE}
+library(xtable)
 library(dplyr)
 library(ggplot2)
 library(reshape2)
@@ -125,7 +126,6 @@ casualties <- storm_data %>%
 casualties$event.type <- factor(
     casualties$event.type,
     levels = rev(casualties$event.type))
-head(casualties, n = 10)
 ```
 
 ```{r}
@@ -140,47 +140,99 @@ damage <- storm_data %>%
 damage$event.type <- factor(
     damage$event.type,
     levels = rev(damage$event.type))
-head(damage, n = 10)
 ```
 
 ## Results
 
-In order to interpret the results we will select only the most impactful event types; the ones that account for more than 90% of all the casualties / damage respectively
-
-```{r}
-threshold = 0.9
-```
-
 ### Social Consequences
 
-Let's first plot the number of casualties by event type for the most impactiful events.
+```{r}
+casualties.summary <- summarise(
+    casualties, 
+    fatalities = sum(fatalities), 
+    injuries = sum(injuries), 
+    totals = sum(totals))
+```
+
+The total number of casualties in the observed period is over **`r floor(casualties.summary$totals / 1000)` thousands**, from which about **`r floor(casualties.summary$fatalities / 1000)` thousands** were fatalities.
+
+```{r results='asis'}
+xt <- xtable(casualties.summary, digits=0)
+print(xt, type="html", include.rownames=FALSE, 
+      html.table.attributes='border="1" cellpadding="5"')
+```
+
+Next, let's find which event types did the most harm. For that, let's consider those events that account for 90% of all casualties.
 
 ```{r}
-worst.indexes <- cumsum(casualties$totals) < threshold * sum(casualties$totals)
+worst.indexes <- cumsum(casualties$totals) < 0.9 * sum(casualties$totals)
+worst.count <- sum(worst.indexes)
+```
+
+We can see that we have `r worst.count` major events that account for 90% of casualties.
+
+```{r results='asis'}
+xt <- xtable(head(casualties, n = worst.count))
+print(xt, type="html", include.rownames=FALSE,
+      html.table.attributes='border="1" cellpadding="5"')
+```
+
+Let's plot the above table to visualize the impact these major events had on human lives and health.
+
+```{r}
 worst.casualties <- casualties[worst.indexes, ] %>% 
     select(-totals) %>% 
     melt(id.vars = c("event.type"))
 
 ggplot(worst.casualties, aes(x = event.type, y = value, fill = variable)) +
     geom_bar(stat='identity') + 
-    coord_flip()
+    coord_flip() +
+    xlab("Event Type") +
+    ylab("Casualties") +
+    ggtitle("Most harmful weather events")
 ```
 
-TBD
+We can see that tornadoes are by far the worst type of events in regards to casualties. In fact, tornadoes account for **`r round(casualties$totals[1] / casualties.summary$totals * 100, digits=1)`%** of casualties. Extreme heat is the second most impactful event type, but with a pretty big difference. Heat accounts for **`r round(casualties$totals[2] / casualties.summary$totals * 100, digits=1)`%** of casualties.
 
 ### Econimic Consequences
 
-Let's first plot the damage amounts by event type for the most impactiful events.
+```{r}
+damage.summary <- summarise(
+    damage, 
+    property = sum(property), 
+    crops = sum(crops), 
+    totals = sum(totals))
+```
+
+The total damage amount in the observed period is about **$`r floor(damage.summary$totals)` bln** dollars, from wich **$`r floor(damage.summary$property)` bln** in property damage and **$`r floor(damage.summary$crops)` bln** in crops damage.
+
+Let's find which event types did the most damage. For that, let's consider those events that account for 90% of the total damage amount.
 
 ```{r}
-worst.indexes <- cumsum(damage$totals) < threshold * sum(damage$totals)
+worst.indexes <- cumsum(damage$totals) < 0.9 * sum(damage$totals)
+worst.count <- sum(worst.indexes)
+```
+
+We can see that we have `r worst.count` major events that account for 90% of the total damage amount.
+
+```{r results='asis'}
+xt <- xtable(head(damage, n = worst.count))
+print(xt, type="html", include.rownames=FALSE,
+      html.table.attributes='border="1" cellpadding="5"')
+```
+
+```{r}
+worst.indexes <- cumsum(damage$totals) < 0.9 * sum(damage$totals)
 worst.damage <- damage[worst.indexes, ] %>% 
     select(-totals) %>% 
     melt(id.vars = c("event.type"))
 
 ggplot(worst.damage, aes(x = event.type, y = value, fill = variable)) +
     geom_bar(stat='identity') + 
-    coord_flip()
+    coord_flip() +
+    xlab("Event Type") +
+    ylab("Damage Amounts (billions)") +
+    ggtitle("Most damaging weather events")
 ```
 
-TBD
+We can see floods account for **`r round(damage$totals[1] / damage.summary$totals * 100, digits=1)`%** of damage, followed by hurricanes (**`r round(damage$totals[2] / damage.summary$totals * 100, digits=1)`%**) and tornadoes (**`r round(damage$totals[3] / damage.summary$totals * 100, digits=1)`%**).

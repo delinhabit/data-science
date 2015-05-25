@@ -4,7 +4,7 @@ May 22, 2015
 
 ## Synopsis
 
-TDB
+Using the data from the U.S. National Oceanic and Atmospheric Administration’s (NOAA) storm database, we were able to identify the social and economical consequences of severe weather events in U.S. Between 1950-01-03 and 2011-11-30, there were observed 902297 severe weather events that caused over **155 thousands** casualties and **$476 bln** in property and crops damages. The following sections will drill down into the available data and will extract some interesting statistics about these events.
 
 ## Data Processing
 
@@ -12,6 +12,7 @@ For this analysis we use the following libraries as dependencies and hence they 
 
 
 ```r
+library(xtable)
 library(dplyr)
 library(ggplot2)
 library(reshape2)
@@ -135,23 +136,6 @@ casualties <- storm_data %>%
 casualties$event.type <- factor(
     casualties$event.type,
     levels = rev(casualties$event.type))
-head(casualties, n = 10)
-```
-
-```
-## Source: local data frame [10 x 4]
-## 
-##           event.type fatalities injuries totals
-## 1            TORNADO       5630    91321  96951
-## 2               HEAT       3138     9154  12292
-## 3  THUNDERSTORM WIND        753     9492  10245
-## 4              FLOOD        470     6789   7259
-## 5          LIGHTNING        816     5230   6046
-## 6        FLASH FLOOD       1035     1802   2837
-## 7          ICE STORM         89     1975   2064
-## 8       WINTER STORM        206     1321   1527
-## 9          HURRICANE        135     1326   1461
-## 10         HIGH WIND        246     1137   1383
 ```
 
 
@@ -167,70 +151,149 @@ damage <- storm_data %>%
 damage$event.type <- factor(
     damage$event.type,
     levels = rev(damage$event.type))
-head(damage, n = 10)
-```
-
-```
-## Source: local data frame [10 x 4]
-## 
-##           event.type   property      crops     totals
-## 1              FLOOD 144.657710  5.6619684 150.319678
-## 2          HURRICANE  84.756180  5.5152928  90.271473
-## 3            TORNADO  56.936985  0.3649501  57.301936
-## 4        STORM SURGE  43.323536  0.0000050  43.323541
-## 5               HAIL  15.732262  3.0009545  18.733217
-## 6        FLASH FLOOD  16.906008  1.5316071  18.437615
-## 7            DROUGHT   1.046106 13.9725660  15.018672
-## 8  THUNDERSTORM WIND  11.366567  1.2559504  12.622518
-## 9        RIVER FLOOD   5.118945  5.0294590  10.148404
-## 10         ICE STORM   3.944928  5.0221100   8.967038
 ```
 
 ## Results
 
-In order to interpret the results we will select only the most impactful event types; the ones that account for more than 90% of all the casualties / damage respectively
-
-
-```r
-threshold = 0.9
-```
-
 ### Social Consequences
 
-Let's first plot the number of casualties by event type for the most impactiful events.
+
+```r
+casualties.summary <- summarise(
+    casualties, 
+    fatalities = sum(fatalities), 
+    injuries = sum(injuries), 
+    totals = sum(totals))
+```
+
+The total number of casualties in the observed period is over **155 thousands**, from which about **15 thousands** were fatalities.
 
 
 ```r
-worst.indexes <- cumsum(casualties$totals) < threshold * sum(casualties$totals)
+xt <- xtable(casualties.summary, digits=0)
+print(xt, type="html", include.rownames=FALSE, 
+      html.table.attributes='border="1" cellpadding="5"')
+```
+
+<!-- html table generated in R 3.1.2 by xtable 1.7-4 package -->
+<!-- Mon May 25 07:23:53 2015 -->
+<table border="1" cellpadding="5">
+<tr> <th> fatalities </th> <th> injuries </th> <th> totals </th>  </tr>
+  <tr> <td align="right"> 15135 </td> <td align="right"> 140474 </td> <td align="right"> 155609 </td> </tr>
+   </table>
+
+Next, let's find which event types did the most harm. For that, let's consider those events that account for 90% of all casualties.
+
+
+```r
+worst.indexes <- cumsum(casualties$totals) < 0.9 * sum(casualties$totals)
+worst.count <- sum(worst.indexes)
+```
+
+We can see that we have 8 major events that account for 90% of casualties.
+
+
+```r
+xt <- xtable(head(casualties, n = worst.count))
+print(xt, type="html", include.rownames=FALSE,
+      html.table.attributes='border="1" cellpadding="5"')
+```
+
+<!-- html table generated in R 3.1.2 by xtable 1.7-4 package -->
+<!-- Mon May 25 07:23:53 2015 -->
+<table border="1" cellpadding="5">
+<tr> <th> event.type </th> <th> fatalities </th> <th> injuries </th> <th> totals </th>  </tr>
+  <tr> <td> TORNADO </td> <td align="right"> 5630.00 </td> <td align="right"> 91321.00 </td> <td align="right"> 96951.00 </td> </tr>
+  <tr> <td> HEAT </td> <td align="right"> 3138.00 </td> <td align="right"> 9154.00 </td> <td align="right"> 12292.00 </td> </tr>
+  <tr> <td> THUNDERSTORM WIND </td> <td align="right"> 753.00 </td> <td align="right"> 9492.00 </td> <td align="right"> 10245.00 </td> </tr>
+  <tr> <td> FLOOD </td> <td align="right"> 470.00 </td> <td align="right"> 6789.00 </td> <td align="right"> 7259.00 </td> </tr>
+  <tr> <td> LIGHTNING </td> <td align="right"> 816.00 </td> <td align="right"> 5230.00 </td> <td align="right"> 6046.00 </td> </tr>
+  <tr> <td> FLASH FLOOD </td> <td align="right"> 1035.00 </td> <td align="right"> 1802.00 </td> <td align="right"> 2837.00 </td> </tr>
+  <tr> <td> ICE STORM </td> <td align="right"> 89.00 </td> <td align="right"> 1975.00 </td> <td align="right"> 2064.00 </td> </tr>
+  <tr> <td> WINTER STORM </td> <td align="right"> 206.00 </td> <td align="right"> 1321.00 </td> <td align="right"> 1527.00 </td> </tr>
+   </table>
+
+Let's plot the above table to visualize the impact these major events had on human lives and health.
+
+
+```r
 worst.casualties <- casualties[worst.indexes, ] %>% 
     select(-totals) %>% 
     melt(id.vars = c("event.type"))
 
 ggplot(worst.casualties, aes(x = event.type, y = value, fill = variable)) +
     geom_bar(stat='identity') + 
-    coord_flip()
+    coord_flip() +
+    xlab("Event Type") +
+    ylab("Casualties") +
+    ggtitle("Most harmful weather events")
 ```
 
-![](Research_files/figure-html/unnamed-chunk-13-1.png) 
+![](Research_files/figure-html/unnamed-chunk-16-1.png) 
 
-TBD
+We can see that tornadoes are by far the worst type of events in regards to casualties. In fact, tornadoes account for **62.3%** of casualties. Extreme heat is the second most impactful event type, but with a pretty big difference. Heat accounts for **7.9%** of casualties.
 
 ### Econimic Consequences
 
-Let's first plot the damage amounts by event type for the most impactiful events.
+
+```r
+damage.summary <- summarise(
+    damage, 
+    property = sum(property), 
+    crops = sum(crops), 
+    totals = sum(totals))
+```
+
+The total damage amount in the observed period is about **$476 bln** dollars, from wich **$427 bln** in property damage and **$49 bln** in crops damage.
+
+Let's find which event types did the most damage. For that, let's consider those events that account for 90% of the total damage amount.
 
 
 ```r
-worst.indexes <- cumsum(damage$totals) < threshold * sum(damage$totals)
+worst.indexes <- cumsum(damage$totals) < 0.9 * sum(damage$totals)
+worst.count <- sum(worst.indexes)
+```
+
+We can see that we have 10 major events that account for 90% of the total damage amount.
+
+
+```r
+xt <- xtable(head(damage, n = worst.count))
+print(xt, type="html", include.rownames=FALSE,
+      html.table.attributes='border="1" cellpadding="5"')
+```
+
+<!-- html table generated in R 3.1.2 by xtable 1.7-4 package -->
+<!-- Mon May 25 07:23:54 2015 -->
+<table border="1" cellpadding="5">
+<tr> <th> event.type </th> <th> property </th> <th> crops </th> <th> totals </th>  </tr>
+  <tr> <td> FLOOD </td> <td align="right"> 144.66 </td> <td align="right"> 5.66 </td> <td align="right"> 150.32 </td> </tr>
+  <tr> <td> HURRICANE </td> <td align="right"> 84.76 </td> <td align="right"> 5.52 </td> <td align="right"> 90.27 </td> </tr>
+  <tr> <td> TORNADO </td> <td align="right"> 56.94 </td> <td align="right"> 0.36 </td> <td align="right"> 57.30 </td> </tr>
+  <tr> <td> STORM SURGE </td> <td align="right"> 43.32 </td> <td align="right"> 0.00 </td> <td align="right"> 43.32 </td> </tr>
+  <tr> <td> HAIL </td> <td align="right"> 15.73 </td> <td align="right"> 3.00 </td> <td align="right"> 18.73 </td> </tr>
+  <tr> <td> FLASH FLOOD </td> <td align="right"> 16.91 </td> <td align="right"> 1.53 </td> <td align="right"> 18.44 </td> </tr>
+  <tr> <td> DROUGHT </td> <td align="right"> 1.05 </td> <td align="right"> 13.97 </td> <td align="right"> 15.02 </td> </tr>
+  <tr> <td> THUNDERSTORM WIND </td> <td align="right"> 11.37 </td> <td align="right"> 1.26 </td> <td align="right"> 12.62 </td> </tr>
+  <tr> <td> RIVER FLOOD </td> <td align="right"> 5.12 </td> <td align="right"> 5.03 </td> <td align="right"> 10.15 </td> </tr>
+  <tr> <td> ICE STORM </td> <td align="right"> 3.94 </td> <td align="right"> 5.02 </td> <td align="right"> 8.97 </td> </tr>
+   </table>
+
+
+```r
+worst.indexes <- cumsum(damage$totals) < 0.9 * sum(damage$totals)
 worst.damage <- damage[worst.indexes, ] %>% 
     select(-totals) %>% 
     melt(id.vars = c("event.type"))
 
 ggplot(worst.damage, aes(x = event.type, y = value, fill = variable)) +
     geom_bar(stat='identity') + 
-    coord_flip()
+    coord_flip() +
+    xlab("Event Type") +
+    ylab("Damage Amounts (billions)") +
+    ggtitle("Most damaging weather events")
 ```
 
-![](Research_files/figure-html/unnamed-chunk-14-1.png) 
+![](Research_files/figure-html/unnamed-chunk-20-1.png) 
 
-TBD
+We can see floods account for **31.6%** of damage, followed by hurricanes (**19%**) and tornadoes (**12%**).
