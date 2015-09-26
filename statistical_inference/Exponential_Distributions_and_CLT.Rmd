@@ -13,7 +13,7 @@ In the following analysis we will explore the exponential distribution and it's 
 
 By using a big number of simulations we will show that the CLT applies also for exponential distributions. That is, we will show that the distribution of sample means is approximately normal.
 
-```{r, results = 'hide', message = FALSE, warning = FALSE}
+```{r results = 'hide', message = FALSE, warning = FALSE}
 library(xtable)
 library(ggplot2)
 set.seed(1001)
@@ -63,7 +63,7 @@ As we know, the exponential distribution has a mean of `1 / lambda`. The estimat
 
 We can see in the table below that the center of mass of the distribution of sample means converges to the theoretical mean of the original distribution, thus reinforcing the Central Limit Theorem.
 
-```{r, results = 'asis', echo = FALSE}
+```{r, results = 'asis'}
 means <- data.frame(
     estimated=mean(exp_means),
     theoretical=1 / lambda)
@@ -76,7 +76,7 @@ The expected standard deviation of a sample is equal to the population standard 
 
 We can see in the table below, that the variance of the distribution of sample means converges to the theoretical variance of the original distribution.
 
-```{r, results = 'asis', echo = FALSE}
+```{r, results = 'asis'}
 theoretical_var <- (1 / lambda) ^ 2 / n
 variances <- data.frame(
     estimated=var(exp_means),
