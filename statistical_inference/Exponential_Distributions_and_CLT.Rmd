@@ -90,8 +90,6 @@ We expect the distribution of the sample means to be approximately normal, so we
 
 In the following diagram we plot the distribution histogram and the estimated mean, as a vertical dotted blue line. We also plot the expect theoretical density function of a normal distribution with the mean `1 / lambda` and the standard deviation of `1 / lambda`.
 
-We can easily see that the distribution of sample means is approximating pretty well the density function of the normal distribution.
-
 ```{r}
 t_mean <- 1 / lambda
 t_sd <- (1 / lambda) / sqrt(n)
@@ -101,5 +99,4 @@ ggplot(data.frame(mu = exp_means), aes(x=mu)) +
     geom_vline(aes(xintercept=mean(mu)), color="blue", linetype="dashed", size=1)
 ```
 
-
-
+We can easily see in the picture above that the distribution of sample means is approximating pretty well the density function of the normal distribution, thus reinforcing the Central Limit Theorem.
