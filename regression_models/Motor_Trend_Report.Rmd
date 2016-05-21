@@ -1,47 +1,95 @@
 ---
-title: "Untitled"
+title: "Automatic transmission cars consume more fuel than manual transmission ones"
 author: "Ion Scerbatiuc"
-date: "February 25, 2016"
+date: "May 21, 2016"
 output:
   html_document: default
   pdf_document:
-    fig_width: 10
+    fig_height: 4
+    fig_width: 6
 ---
 
-TODO: Executive Summary
-http://www.businesswritingblog.com/business_writing/2013/05/write-better-executive-summaries.html
-http://unilearning.uow.edu.au/report/4bi1.html
+# Summary
+
+By using the `mtcars` dataset from the `Motor Trend` magazine, we're trying to understand what is the relationship between the transmission type and the mileage of cars and how can we quantify it.
+
+We start with an exploratory analysis and a simple linear model that shows and average increase of fuel consumption for automatic cars of `7.25 mpg` compared to manual cars. After using a stewise model selection algorithm we find a better model that explains about `83.4%` of the mileage variation. Using that model, we conclude that automatic cars consume on average about `2.94 mpg` more than manual cars, given that all the other car caracteristics are kept constant.
+
+# Exploratory Analysis
 
 ```{r results = 'hide', message = FALSE, warning = FALSE}
 library(datasets)
 library(ggplot2)
 library(dplyr)
-library(xtable)
-options(xtable.comment = FALSE)
+library(car)
 data(mtcars)
 ```
 
-Let's first explore what is the measured fuel consumption by transmission type.
+The first step is to identify the variables we have and what values they take (Appendix 1). Next we want to explore what is the measured fuel consumption by transmission type, to see if there is indeed some level of corelation between the two.
 
-```{r}
-ggplot(mtcars, aes(x = factor(am), y = mpg, fill = factor(am))) +
-    geom_boxplot() +
-    xlab("Transmission type (0 - automatic, 1 - manual)") +
-    ylab("Fuel consumption (mpg)") +
+```{r fig.align='center'}
+mtcars$am <- as.factor(mtcars$am)
+levels(mtcars$am) <- c("Automatic", "Manual")
+ggplot(mtcars, aes(x = am, y = mpg, fill = am)) + geom_boxplot() +
+    xlab("Transmission type") + ylab("Fuel consumption (mpg)") +
     ggtitle('Fuel consumption by transmission type')
 ```
 
-From the plot above we can conclude that automatic cars are consuming on average more fuel than manual transmission cars. But is that significant? Let's dig deeper to find that out.
+From the plot above we can infer that automatic cars are consuming on average more fuel than manual transmission cars. But is that result statistically significant? To answer that question, let's fit a linear model whit `mpg` as the outcome and the transmission type as the predictor.
 
-Let's fit a linear model whit mpg as the outcome and the transmission type as a factor variable.
-
-```{r results='asis'}
-fit <- lm(mpg ~ factor(am), mtcars)
-print(xtable(summary(fit)$coefficients), include.rownames=FALSE, sanitize.text=identity)
+```{r}
+fit <- lm(mpg ~ am, mtcars)
+summary(fit)
 ```
 
-By inspecting the coefficients table we can conclude that manual cars have an expected mileage `7.25` mpg higher than the expected mileage of automatic cars. The result is also statistically significant because the p-value for is lower than `0.05`.
+By inspecting the coefficients table we can conclude that manual cars have an expected mileage `7.25 mpg` higher than the expected mileage of automatic cars. The result is also statistically significant because the p-value for the associated t-test is lower than `0.05`. 
 
-The result is suprising. Why would automatic cars consume more fuel than manual cars? Are there any variables that we are missing from the model? Knowing how cars work I would suspect the mileage to be corelated to the number of cylinders (engine size) and the weight of the car.
+However, if we look at the value of R-squared, we see that this model only explains about `33.85%` of the variation. There has to be a better model that explains more of the variation in mileage, so let's dig deeper using a multivariate linear model.
 
+# Model Selection
 
+To find the best model from the variables in the dataset, let's use a stepwise model fit algorithm.
+
+```{r}
+bestFit <- step(lm(data = mtcars, mpg ~ .), trace=0, steps=1000)
+summary(bestFit)
+```
+
+From the results above it seems that by adding the vehicle weight and acceleration to the initial model, we obtain a better model that explains about `83.4%` of the mileage variation. To validate the result, we performed an analysis of variance and found a statistically significant difference between the two models (Appendix 2). We also performed residual diagnostics and found that the residuals are normally distributed and mostly patternless (Appendix 3).
+
+# Conclusions
+
+By interpreting the coefficients of the `bestFit` model we can conclude that manual transmission cars consume `2.94 mpg` less fuel than automatic transmission cars, holding all the other caracteristics constant. That is, if we take two cars, with automatic and manual transmissions respectively, with the same weight and acceleration, we expect the automatic car to consume `2.94 mpg` more fuel than the manual car.
+
+# Appendixes
+
+## Appendix 1 - Dataset definition
+
+```
+A data frame with 32 observations on 11 variables.
+
+[, 1]	mpg	Miles/(US) gallon
+[, 2]	cyl	Number of cylinders
+[, 3]	disp	Displacement (cu.in.)
+[, 4]	hp	Gross horsepower
+[, 5]	drat	Rear axle ratio
+[, 6]	wt	Weight (1000 lbs)
+[, 7]	qsec	1/4 mile time
+[, 8]	vs	V/S
+[, 9]	am	Transmission (0 = automatic, 1 = manual)
+[,10]	gear	Number of forward gears
+[,11]	carb	Number of carburetors
+```
+
+## Appendix 2 - Analysis of variance for the fitted model
+
+```{r}
+anova(fit, bestFit)
+```
+
+## Appendix 3 - Residual diagnostics of the fitted model
+
+```{r}
+par(mfrow = c(2,2))
+plot(bestFit)
+```
