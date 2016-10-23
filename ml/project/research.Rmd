@@ -26,7 +26,7 @@ Read more about the experiment and the available data sources here: http://group
 
 In order to be able to reproduce this research you'll need to install the following R packages: caret, randomForest and rpart. We also create a function `downloadData` to aid us in the data retrieval step.
 
-```{r, cache=TRUE}
+```{r, cache=TRUE, results = 'hide', message = FALSE, warning = FALSE}
 install.packages(c('caret', 'rpart', 'randomForest'))
 
 downloadData <- function(url) {

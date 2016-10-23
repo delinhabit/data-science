@@ -161,11 +161,9 @@ $(document).ready(function () {
 <div id="prerequisites" class="section level2">
 <h2>Prerequisites</h2>
 <p>In order to be able to reproduce this research you’ll need to install the following R packages: caret, randomForest and rpart. We also create a function <code>downloadData</code> to aid us in the data retrieval step.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="kw">c</span>(<span class="st">'caret'</span>, <span class="st">'rpart'</span>, <span class="st">'randomForest'</span>))</code></pre></div>
-<pre><code>## 
-## The downloaded binary packages are in
-##  /var/folders/f4/whzz8_zj3pn7qmfxbcbwdm880000gn/T//RtmpNCC605/downloaded_packages</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">downloadData &lt;-<span class="st"> </span>function(url) {
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="kw">c</span>(<span class="st">'caret'</span>, <span class="st">'rpart'</span>, <span class="st">'randomForest'</span>))
+
+downloadData &lt;-<span class="st"> </span>function(url) {
     <span class="co"># Download the data from the provided URL and return the path to the</span>
     <span class="co"># downloaded file.</span>
     if (!<span class="kw">file.exists</span>(<span class="st">&quot;data&quot;</span>)) {

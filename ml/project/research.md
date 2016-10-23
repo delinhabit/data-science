@@ -21,15 +21,7 @@ In order to be able to reproduce this research you'll need to install the follow
 
 ```r
 install.packages(c('caret', 'rpart', 'randomForest'))
-```
 
-```
-## 
-## The downloaded binary packages are in
-## 	/var/folders/f4/whzz8_zj3pn7qmfxbcbwdm880000gn/T//RtmpNCC605/downloaded_packages
-```
-
-```r
 downloadData <- function(url) {
     # Download the data from the provided URL and return the path to the
     # downloaded file.
