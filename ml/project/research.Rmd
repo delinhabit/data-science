@@ -64,7 +64,7 @@ trainingData <- read.csv(trainingDataFile, na.strings=c("NA",""))
 testingData <- read.csv(testingDataFile, na.strings=c("NA",""))
 ```
 
-By using summary we conclude that the first 7 columns of the datasets are informational and don't have any predictive value. There are also a lot of columns with missing data. We'll exclude all these columns from both datasets. At the end, we retain 52 predictors for the `classe` variable we're trying to predict.
+By using `summary(trainingData)` we conclude that the first 7 columns of the datasets are informational and don't have any predictive value. There are also a lot of columns with missing data. We'll exclude all these columns from both datasets. At the end, we retain 52 predictors for the `classe` variable we're trying to predict.
 
 ```{r}
 trainingData <- trainingData[, -c(1:7)]
@@ -89,13 +89,13 @@ trainingSet <- trainingData[inTrain, ]
 validationSet <- trainingData[-inTrain, ]
 ```
 
-Decision trees and random forests are known as good models for classification problems. By the nature of the algorithm (sub-sampling and selecting by vote the best sub-trees), they also are good at picking the most predictive features. Therefore we will use all the remaining features to build the models. We will train a decision tree model (using the `rpart` library) and a random forest model (using the `randomForest` library) and will compare their accuracies. The model with the best accuracy will be choosen.
+Decision trees and random forests are known as good models for classification problems. By the nature of the algorithm (sub-sampling and selecting by vote the best sub-trees), they also are good at picking the most predictive features. Therefore we will use all the remaining features to build the models and let the models determine the best features. We will train a decision tree model (using the `rpart` library) and a random forest model (using the `randomForest` library) and will compare their accuracies. The model with the best accuracy will be choosen.
 
 ## Training and evaluating the classifiers
 
 In this step we will train the two classifiers. This operation can take a long time, so be prepared to wait until the algorithms finish to run and you get the final models.
 
-```{r, cache=TRUE}
+```{r, cache=TRUE, results = 'hide', message = FALSE, warning = FALSE}
 set.seed(23432)
 
 fitRpart <- train(classe ~ ., data=trainingSet, method="rpart", tuneLength=20)
@@ -104,18 +104,30 @@ fitRF <- train(classe ~ ., data=trainingSet, method="rf")
 
 Next, let's compare the accuracies of the two models
 
-```{r}
-confusionMatrix(predict(rpartFit, validationSet), validationSet$classe)$overall
+```{r, message = FALSE, warning = FALSE}
+confusionMatrix(predict(fitRpart, validationSet), validationSet$classe)$overall['Accuracy']
 ```
 
-```{r}
-confusionMatrix(predict(rfFit, validationSet), validationSet$classe)
+```{r, message = FALSE, warning = FALSE}
+confusionMatrix(predict(fitRF, validationSet), validationSet$classe)$overall['Accuracy']
 ```
 
-TODO: Explain why we chose this model vs the decision tree.
+From the results above, we conclude that the random forest classifier has a better accuracy (0.993) than the decision tree classifier (0.799). We therefore choose to use the former to evaluate the testing data set. The estimated out-of-sample error of the classifier is `1 - 0.993 = 0.007`, which means that we will misclassify only about 7 observations in a thousand.
+
+For the random forest that we chose, let's visualize the most important variables that the model identified. For that we can use the `varImpPlot` function on the final model.
+
+```{r}
+varImpPlot(fitRF$finalModel, n.var=20, main="20 most important variables (from 52)")
+```
+
+From the plot above we can see that the yaw, pitch and roll measurements on the belt are in the top 5 most important variables, which is not surprising given on the type of physical exercise (the subject need to not move the belt a lot when performing the exercise, so any changes in the readings on the belt are expected to be highly predictive).
 
 ## Evaluating the final model on the testing dataset
 
+Finally, let's use our model to predict the classes of the testing observations. Since the out-of-sample error is estimated to be `0.007`, the probability of misclassifying any observation in this dataset is `dbinom(1, size=20, prob=0.007) = 0.123`. That is, there is only a `12%` chance that one of the observations will be misclassified.
+
 ```{r}
-predict(rfFit, testingData)
+predict(fitRF, testingData)
 ```
+
+Running the above results through the automatically graded quiz, yields a 100% accuracy on this testing set of 20 observations.
